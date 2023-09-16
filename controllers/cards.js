@@ -53,19 +53,13 @@ const likeCard = (req, res) => Card.findByIdAndUpdate(
   { new: true },
 )
   .populate(['owner', 'likes'])
-  .then((card) => {
-    if (!card) {
-      return res.status(404).send({ message: 'not found' });
-    }
-    return res.status(200).send(card);
-  })
+  .then((card) => res.status(200).send(card))
   .catch((err) => {
-    if (err.name === 'CastError') {
+    if (err.name === 'ValidationError') {
       return res.status(400).send({
         message: `${Object.values(err.errors).map((err) => err.message).join(', ')}`,
       });
     }
-
     return res.status(500).send({ message: 'Server Error' });
   });
 
