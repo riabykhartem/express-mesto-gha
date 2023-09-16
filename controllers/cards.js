@@ -5,14 +5,7 @@ const getCards = (req, res) => {
   Card.find({})
     .populate(['owner', 'likes'])
     .then((card) => res.status(200).send(card))
-    .catch((err) => {
-      if (err.name === 'CastError') {
-        return res.status(400).send({
-          message: `${Object.values(err.errors).map((err) => err.message).join(', ')}`,
-        });
-      }
-      return res.status(500).send({ message: 'Server Error' });
-    });
+    .catch(() => res.status(500).send({ message: 'Server Error' }));
 };
 
 const createCard = (req, res) => {
@@ -38,7 +31,7 @@ const deleteCardById = (req, res) => {
   Card.findByIdAndRemove(req.params.cardId)
     .then(() => res.status(200).send({ message: 'карточка удалена' }))
     .catch((err) => {
-      if (err.name === 'ValidationError') {
+      if (err.name === 'CastError') {
         return res.status(400).send({
           message: `${Object.values(err.errors).map((err) => err.message).join(', ')}`,
         });

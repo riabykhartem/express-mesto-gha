@@ -4,7 +4,7 @@ const User = require('../models/user');
 
 const getUsers = (req, res) => User.find({})
   .then((users) => res.status(200).send(users))
-  .catch((err) => res.status(400).send({ message: `${Object.values(err.errors).map((err) => err.message).join(', ')}` }));
+  .catch(() => res.status(500).send({ message: 'Server Error' }));
 
 const createUser = (req, res) => {
   const newUserData = req.body;
@@ -22,19 +22,15 @@ const createUser = (req, res) => {
 
 const getUserById = (req, res) => {
   const { userId } = req.params;
-  return User.findById(userId)
-    .then((user) => {
-      if (!user) {
-        return res.status(404).send({ message: 'user no found' });
-      }
-      return res.status(200).send(user);
-    })
-
+  User.findById(userId)
+    .orFail(new Error('NotValiId'))
+    .then((user) => res.status(200).send(user))
     .catch((err) => {
+      if (err.message === 'NotValiId') {
+        return res.status(404).send({ message: 'user not found' });
+      }
       if (err.name === 'CastError') {
-        return res.status(400).send({
-          message: 'некоректный id пользователя',
-        });
+        return res.status(400).send({ message: 'incorrect id' });
       }
       return res.status(500).send({ message: 'Server Error' });
     });
