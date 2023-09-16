@@ -29,11 +29,15 @@ const createCard = (req, res) => {
 
 const deleteCardById = (req, res) => {
   Card.findByIdAndRemove(req.params.cardId)
+    .orFail(new Error('NotValiId'))
     .then(() => res.status(200).send({ message: 'карточка удалена' }))
     .catch((err) => {
+      if (err.message === 'NotValiId') {
+        return res.status(404).send({ message: 'card not found' });
+      }
       if (err.name === 'CastError') {
         return res.status(400).send({
-          message: `${Object.values(err.errors).map((err) => err.message).join(', ')}`,
+          message: 'invalid id',
         });
       }
       return res.status(500).send({ message: 'Server Error' });
