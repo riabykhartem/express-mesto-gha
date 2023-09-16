@@ -7,7 +7,7 @@ const { PORT = 3000 } = process.env;
 
 mongoose.connect('mongodb://127.0.0.1:27017/mydb', {
   useNewUrlParser: true,
-}).then(console.log('БД подключена'));
+});
 const app = express();
 app.use(bodyParser.json());
 
@@ -21,6 +21,4 @@ app.use((req, res, next) => {
 
 app.use(routes);
 
-app.listen(PORT, () => {
-  console.log(`server is running on port ${PORT}`);
-});
+app.listen(PORT);
