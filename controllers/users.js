@@ -10,7 +10,7 @@ const createUser = (req, res) => {
   return User.create(newUserData)
     .then((newUser) => res.status(201).send(newUser))
     .catch((err) => {
-      if (err.name === 'CastError') {
+      if (err.name === 'ValidationError') {
         return res.status(400).send({
           message: `${Object.values(err.errors).map((err) => err.message).join(', ')}`,
         });
@@ -29,7 +29,7 @@ const getUserById = (req, res) => {
       return res.status(200).send(user);
     })
     .catch((err) => {
-      if (err.name === 'CastError') {
+      if (err.name === 'ValidationError') {
         return res.status(400).send({
           message: 'некоректный id пользователя',
         });
@@ -47,7 +47,7 @@ const updateUser = (req, res) => {
   )
     .then((user) => res.status(200).send(user))
     .catch((err) => {
-      if (err.name === 'CastError') {
+      if (err.name === 'ValidationError') {
         return res.status(400).send({
           message: `${Object.values(err.errors).map((err) => err.message).join(', ')}`,
         });
