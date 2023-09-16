@@ -40,34 +40,58 @@ const deleteCardById = (req, res) => {
     });
 };
 
-const likeCard = (req, res) => Card.findByIdAndUpdate(
-  req.params.cardId,
-  { $addToSet: { likes: req.user._id } },
-  { new: true },
-)
-  .populate(['owner', 'likes'])
-  .then((card) => res.status(200).send(card))
-  .catch((err) => {
-    if (err.name === 'ValidationError') {
-      return res.status(400).send({
-        message: `${Object.values(err.errors).map((err) => err.message).join(', ')}`,
-      });
-    }
-    return res.status(500).send({ message: 'Server Error' });
-  });
+const likeCard = (req, res) => {
+  Card.findByIdAndUpdate(
+    req.params.cardId,
+    { $addToSet: { likes: req.user._id } },
+    { new: true },
+  )
+    .orFail(new Error('NotValiId'))
+    .populate(['owner', 'likes'])
+    .then((card) => res.status(200).send(card))
+    .catch((err) => {
+      if (err.message === 'NotValiId') {
+        return res.status(404).send({
+          message: 'User not found',
+        });
+      }
+      if (err.name === 'CastError') {
+        return res.status(400).send({
+          message: 'incorrect user ID',
+        });
+      }
+      if (err.message === 'NotValiId') {
+        return res.status(404).send({
+          message: 'User not found',
+        });
+      }
+      return res.status(500).send({ message: 'Server Error' });
+    });
+};
 
 const removeLike = (req, res) => {
-  Card.findByIdAndRemove(
+  Card.findByIdAndUpdate(
     req.params.cardId,
     { $pull: { likes: req.user._id } },
     { new: true },
   )
+    .orFail(new Error('NotValiId'))
     .populate(['owner', 'likes'])
-    .then((user) => res.send(user))
+    .then((card) => res.status(200).send(card))
     .catch((err) => {
-      if (err.name === 'ValidationError') {
+      if (err.message === 'NotValiId') {
+        return res.status(404).send({
+          message: 'User not found',
+        });
+      }
+      if (err.name === 'CastError') {
         return res.status(400).send({
-          message: `${Object.values(err.errors).map((err) => err.message).join(', ')}`,
+          message: 'incorrect user ID',
+        });
+      }
+      if (err.message === 'NotValiId') {
+        return res.status(404).send({
+          message: 'User not found',
         });
       }
       return res.status(500).send({ message: 'Server Error' });
