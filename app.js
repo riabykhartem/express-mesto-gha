@@ -13,12 +13,27 @@ app.use(bodyParser.json());
 
 app.use((req, res, next) => {
   req.user = {
-    _id: '64ffd7fa4d3cab4ba3496eaf',
+    _id: '65187f6a91a4752444507056',
   };
 
   next();
 });
 
 app.use(routes);
+
+app.use((err, req, res, next) => {
+  // если у ошибки нет статуса, выставляем 500
+  const { statusCode = 500, message } = err;
+
+   return res
+    .status(statusCode)
+    .send({
+      // проверяем статус и выставляем сообщение в зависимости от него
+      message: statusCode === 500
+        ? 'На сервере произошла ошибка'
+        : message,
+    });
+  next();
+});
 
 app.listen(PORT);

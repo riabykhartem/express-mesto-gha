@@ -1,4 +1,3 @@
-/* eslint-disable no-shadow */
 const Card = require('../models/card');
 
 const getCards = (req, res) => {
