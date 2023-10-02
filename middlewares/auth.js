@@ -1,25 +1,23 @@
-/* eslint-disable no-shadow */
 const JWT = require('jsonwebtoken');
 
-const auth = async (req, res, next) => {
-  try {
-    const { authorization } = req.headers;
-    if (!authorization || !authorization.startsWith('Bearer')) {
-      return res.status(401).send({ message: 'not authorized' });
-    }
-    const token = authorization.split(' ')[1];
-    const parsedToken = await JWT.verify(token, 'cheburashka');
-    if (parsedToken) {
-      req.user = {
-        _id: parsedToken._id,
-      };
-      next();
-    }
-  } catch (err) {
-    if (err instanceof JWT.JsonWebTokenError) {
-      return res.status(401).send({ message: 'not authorized' });
-    }
-    return res.status(500).send({ message: 'Server Error' });
+const NotAuthoirizedError = require('../errors/NotAuthoirizedError');
+
+module.exports = (req, res, next) => {
+  const { authorization } = req.headers;
+  if (!authorization || !authorization.startsWith('Bearer ')) {
+    throw new NotAuthoirizedError('Необходима авторизация');
   }
+
+  const token = authorization.replace('Bearer ', '');
+  let payload;
+
+  try {
+    payload = JWT.verify(token, 'cheburashka');
+  } catch (err) {
+    throw new NotAuthoirizedError('Необходима авторизация');
+  }
+
+  req.user = payload; // записываем пейлоуд в объект запроса
+
+  next(); // пропускаем запрос дальше
 };
-module.exports = auth;
