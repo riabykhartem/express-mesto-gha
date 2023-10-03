@@ -1,9 +1,11 @@
 const bcrypt = require('bcryptjs');
 const JWT = require('jsonwebtoken');
+const mongoose = require('mongoose');
 const User = require('../models/user');
 const ConflictError = require('../errors/ConflictError');
 const BadRequestError = require('../errors/BadRequestError');
 const NotFoundError = require('../errors/NotFoundError');
+const NotAuthoirizedError = require('../errors/NotAuthoirizedError');
 
 const getUsers = (req, res) => User.find({})
   .then((users) => res.status(200).send(users))
@@ -11,12 +13,12 @@ const getUsers = (req, res) => User.find({})
 
 const createUser = (req, res, next) => {
   const {
-    email, password, name, about,
+    email, password, name, about, avatar,
   } = req.body;
   bcrypt
     .hash(password, 10)
     .then((hash) => User.create({
-      email, password: hash, name, about,
+      email, password: hash, name, about, avatar,
     }))
     .then((user) => res.status(201).send({
       name: user.name, about: user.about, avatar: user.avatar, email,
@@ -24,7 +26,7 @@ const createUser = (req, res, next) => {
     .catch((err) => {
       if (err.code === 11000) {
         next(new ConflictError(err.message));
-      } else if (err.name === 'ValidationError') {
+      } else if (err instanceof mongoose.Error.ValidationError) {
         next(new BadRequestError('Переданы некорректные данные при создании пользователя'));
       } else {
         next(err);
@@ -88,17 +90,17 @@ const updateAvatar = (req, res) => {
     });
 };
 
-const login = async (req, res) => {
+const login = async (req, res, next) => {
   const { email, password } = req.body;
 
   const user = await User.findOne({ email });
   if (!user) {
-    return res.status(403).send({ message: 'Неправильные почта или пароль' });
+    return next(new NotAuthoirizedError('Неправильные почта или пароль'));
   }
 
   const matched = await bcrypt.compare(password, user.password);
   if (!matched) {
-    return res.status(403).send({ message: 'Неправильные почта или пароль' });
+    return next(new NotAuthoirizedError('Неправильные почта или пароль'));
   }
 
   const payload = { _id: user._id };
