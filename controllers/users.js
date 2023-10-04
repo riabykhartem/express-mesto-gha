@@ -6,6 +6,7 @@ const ConflictError = require('../errors/ConflictError');
 const BadRequestError = require('../errors/BadRequestError');
 const NotFoundError = require('../errors/NotFoundError');
 const NotAuthoirizedError = require('../errors/NotAuthoirizedError');
+const { SECRET_KEY } = require('../utils/constants');
 
 const getUsers = (req, res) => User.find({})
   .then((users) => res.status(200).send(users))
@@ -105,12 +106,12 @@ const login = async (req, res, next) => {
 
   const payload = { _id: user._id };
 
-  const token = JWT.sign(payload, 'cheburashka', { expiresIn: '7d' });
+  const token = JWT.sign(payload, SECRET_KEY, { expiresIn: '7d' });
   return res.status(200).send({ token });
 };
 
 const getCurrentUser = (req, res, next) => {
-  User.findById(req.user._id.toString())
+  User.findById(req.user._id)
     .then((user) => res.status(200).send(user))
     .catch(next(new NotFoundError('user not found')));
 };

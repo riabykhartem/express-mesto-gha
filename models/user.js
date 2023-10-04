@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const validator = require('validator');
+const { URL_REGEX, EMAIL_REGEX } = require('../utils/constants');
 
 const userSchema = new mongoose.Schema({
   name: {
@@ -18,7 +18,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     validate: {
       validator(v) {
-        return /^https?:\/\/(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_\+.~#?&\/=]*)$/.test(v);
+        return URL_REGEX.test(v);
       },
       default: 'https://pictures.s3.yandex.net/resources/jacques-cousteau_1604399756.png',
     },
@@ -29,7 +29,9 @@ const userSchema = new mongoose.Schema({
     unique: true,
     required: true,
     validate: {
-      validator: (v) => validator.isEmail(v),
+      validator(v) {
+        return EMAIL_REGEX.test(v);
+      },
       message: 'Некорректный URL',
     },
     autoIndex: true,
