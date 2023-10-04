@@ -30,12 +30,11 @@ const createCard = (req, res) => {
     });
 };
 
-// eslint-disable-next-line consistent-return
 const deleteCardById = (req, res, next) => {
   Card.findById(req.params.cardId)
     .then((card) => {
       if (card.owner.toString() !== req.user._id) {
-        throw new ForbiddenError('Карточка другого пользователя');
+        next(new ForbiddenError('Карточка другого пользователя'));
       }
       Card.deleteOne(card)
         .orFail()

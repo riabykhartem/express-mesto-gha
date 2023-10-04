@@ -17,8 +17,11 @@ router.post('/signup', celebrate({
     avatar: Joi.string().pattern(URL_REGEX),
   }),
 }), createUser);
+router.patch('/users/me', authorization, updateUser);
 
-router.get('/:userId', authorization, getUserById);
+router.get('/users/me', authorization, getCurrentUser);
+
+router.get('/users/:userId', authorization, getUserById);
 
 router.patch('/users/me', authorization, updateUser);
 
@@ -30,7 +33,5 @@ router.post('/signin', celebrate({
     password: Joi.string().required(),
   }),
 }), login);
-
-router.get('/users/me', getCurrentUser);
 
 module.exports = router;

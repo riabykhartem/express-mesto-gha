@@ -1,17 +1,18 @@
 const router = require('express').Router();
 const { celebrate, Joi } = require('celebrate');
 const authorization = require('../middlewares/auth');
+const { URL_REGEX } = require('../utils/constants');
 
 const {
   getCards, createCard, deleteCardById, likeCard, removeLike,
 } = require('../controllers/cards');
 
-router.get('/cards', getCards);
+router.get('/cards', authorization, getCards);
 
 router.post('/cards', celebrate({
   body: Joi.object().keys({
     name: Joi.string().required().min(2).max(30),
-    link: Joi.string().required().min(2).max(30),
+    link: Joi.string().required().pattern(URL_REGEX),
   }),
 }), authorization, createCard);
 
