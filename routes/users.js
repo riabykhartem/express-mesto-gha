@@ -37,7 +37,11 @@ router.patch('/users/me', celebrate({
   }),
 }), authorization, updateUser);
 
-router.patch('/users/me/avatar', authorization, updateAvatar);
+router.patch('/users/me/avatar', celebrate({
+  body: Joi.object().keys({
+    avatar: Joi.string().pattern(URL_REGEX),
+  }),
+}), authorization, updateAvatar);
 
 router.post('/signin', celebrate({
   body: Joi.object().keys({
